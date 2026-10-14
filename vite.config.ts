@@ -146,7 +146,15 @@ function authPopupPlugin(): Plugin {
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
+  // GitHub Pages project sites live below /<repository-name>/. Keep the same
+  // base in Vite's emitted asset URLs and in the client router.
   base: process.env.PAGES_BASE || "/",
+  define: {
+    // Unlike VITE_* variables, PAGES_BASE must not be exposed as an arbitrary
+    // environment object. This single build-time flag only selects static PWA
+    // URLs when deploying to GitHub Pages.
+    __PAGES_BASE__: JSON.stringify(process.env.PAGES_BASE || ""),
+  },
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -168,10 +176,10 @@ export default defineConfig(({ command, isPreview }) => ({
     grokPwaPlugin(),
     tailwindcss(),
     tanstackStart({
-      // Explicit client entry avoids Vite 8/Rolldown falling back to the
-      // conventional index.html entry in this index.html-less Start project.
+      // Keep Start's client build from falling back to Vite's plain index.html entry.
+      // The path is relative to srcDirectory (defaults to "src").
       client: {
-        entry: "./client.tsx",
+        entry: "client.tsx",
       },
       spa: {
         enabled: true,
