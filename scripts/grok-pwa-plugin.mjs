@@ -166,6 +166,10 @@ export function grokPwaPlugin() {
       return `export const grokOgIdentity = ${JSON.stringify(snapshotOgIdentity(root))};`;
     },
     transformIndexHtml(html) {
+      // GitHub Pages cannot serve Nitro's runtime manifest/install middleware.
+      // In that build, src/routes/__root.tsx supplies static, base-aware PWA and
+      // social tags; avoid injecting Grok-hosted extensions and root-only URLs.
+      if (process.env.PAGES_BASE) return html;
       return injectGrokPwaHead(html, {
         host: process.env.VITE_PUBLIC_HOSTNAME ?? "",
         cwd: root,
