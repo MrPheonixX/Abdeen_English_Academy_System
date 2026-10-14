@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "Abdeen English Academy",
+  "short_name": "English Academy",
+  "description": "A practical English practice studio for speaking, phrases, reading, pronunciation, and daily progress.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3eee6",
+  "theme_color": "#0e6b68",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "./__grok/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./__grok/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
