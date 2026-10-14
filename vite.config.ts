@@ -2,8 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  // This line is critical for GitHub Pages project sites
+  // This is the critical line for GitHub Pages. It MUST be inside the curly braces.
   base: process.env.PAGES_BASE || '/',
   plugins: [react()],
   resolve: {
@@ -12,21 +13,6 @@ export default defineConfig({
     },
   },
   build: {
-    // Ensure the output directory matches the workflow above
     outDir: 'dist',
-    rollupOptions: {
-      output: {
-        // Optional: Split chunks for faster loading
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-
-          export default defineConfig({
-  base: process.env.PAGES_BASE || '/',
-  // ... rest of your config
-});
-        }
-      }
-    }
-  }
+  },
 });
