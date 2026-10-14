@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -19,6 +20,7 @@ import {
   YAxis,
 } from "recharts";
 import { useAcademyStore } from "@/store/useAcademyStore";
+import { streakCount, useAcademy } from "@/lib/academy/store";
 
 type Student = { name: string; grade: string; attendance: number; status: "Active" | "At Risk" };
 
@@ -55,6 +57,13 @@ const col = createColumnHelper<Student>();
 export default function Dashboard() {
   const { theme, toggleTheme, user, setUser } = useAcademyStore();
   const dark = theme === "dark";
+  const hydrate = useAcademy((s) => s.hydrate);
+  const xp = useAcademy((s) => s.xp);
+  const lv = useAcademy((s) => s.lv);
+  const days = useAcademy((s) => s.days);
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const c = dark
     ? { page: "bg-slate-950 text-slate-100", card: "bg-slate-900 border-slate-800", muted: "text-slate-400", head: "bg-slate-800/70", line: "border-slate-800", grid: "#334155", accent: "#2dd4bf" }
@@ -96,6 +105,9 @@ export default function Dashboard() {
   return (
     <div className={`min-h-screen p-4 sm:p-8 ${c.page}`}>
       <div className="mx-auto max-w-5xl space-y-6">
+        <Link to="/" className={`text-sm font-semibold underline ${c.muted}`}>
+          ← Back to the academy
+        </Link>
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">Academy Dashboard</h1>
@@ -117,6 +129,19 @@ export default function Dashboard() {
             </button>
           </div>
         </header>
+
+        <section className={`grid grid-cols-3 gap-3 rounded-xl border p-4 text-center ${c.card}`}>
+          {[
+            ["Your streak", String(streakCount(days))],
+            ["Your level", String(lv)],
+            ["Your XP", String(xp)],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <p className="text-2xl font-extrabold">{value}</p>
+              <p className={`text-xs ${c.muted}`}>{label}</p>
+            </div>
+          ))}
+        </section>
 
         <div className="grid gap-6 md:grid-cols-2">
           <section className={`rounded-xl border p-4 ${c.card}`}>
