@@ -7,8 +7,27 @@ A browser-first English practice workspace: daily tasks, study plan, levels, phr
 Node.js 22+ and npm.
 
 ```
+on powershell 
+
+cd C:\yourfilelocation\Desktop\Abdeen_English_Academy_System-main 
+
+npm install
+
+npm run dev
+
+npm run build
+or
+npx vite
+
+or if did not work just 
+
+cd C:\yourfilelocation\Desktop\Abdeen_English_Academy_System-main 
+
 npm install
 npm run dev
+npx vite
+
+
 ```
 
 Open the local URL Vite prints (port 8080). Production build: `npm run build`.
