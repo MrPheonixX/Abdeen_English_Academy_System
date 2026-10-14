@@ -21,6 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Leftovers from other builders break the TanStack Start build: a root
+      # index.html makes the output the unbuilt template (blank page).
+      - name: Remove files that break the build
+        run: |
+          rm -rf .vercel .output dist pages-out
+          rm -f index.html src/main.tsx src/client.tsx Dashboard.tsx PATCH-INSTRUCTIONS.md
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -55,6 +61,10 @@ jobs:
           fi
           if [ ! -f pages-out/manifest.webmanifest ] || [ ! -f pages-out/sw.js ]; then
             echo "Static PWA manifest or service worker is missing from the build" >&2
+            exit 1
+          fi
+          if grep -q "/src/main.tsx" pages-out/index.html; then
+            echo "index.html is the unbuilt template, not the app" >&2
             exit 1
           fi
           touch pages-out/.nojekyll
