@@ -20,6 +20,11 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
           'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+
+          export default defineConfig({
+  base: process.env.PAGES_BASE || '/',
+  // ... rest of your config
+});
         }
       }
     }
