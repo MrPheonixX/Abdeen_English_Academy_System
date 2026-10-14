@@ -6,6 +6,24 @@ import appCss from "../styles.css?url";
 
 const APP_NAME = "English Academy";
 
+const BOOT_DIAGNOSTIC = [
+  "(function(){",
+  "var errs=[];",
+  "function add(m){errs.push(m);}",
+  "window.addEventListener('error',function(e){var t=e.target;if(t&&t!==window&&(t.src||t.href)){add('Could not load: '+(t.src||t.href));}else{add('Error: '+e.message+' @ '+(e.filename||'')+':'+(e.lineno||''));}},true);",
+  "window.addEventListener('unhandledrejection',function(e){var r=e.reason;add('Promise error: '+((r&&(r.stack||r.message))||r));});",
+  "setTimeout(function(){",
+  "var b=document.body;if(!b||b.innerText.replace(/\\s/g,'').length>0||document.getElementById('app-diag'))return;",
+  "var d=document.createElement('pre');d.id='app-diag';",
+  "d.style.cssText='white-space:pre-wrap;word-break:break-all;font:13px/1.5 monospace;padding:16px;margin:0;background:#fff;color:#111;position:fixed;top:0;left:0;right:0;bottom:0;overflow:auto;z-index:99999';",
+  "var s=[].map.call(document.scripts,function(x){return x.src;}).filter(Boolean);",
+  "d.textContent='English Academy did not start.\\n\\nPage: '+location.href+'\\nDeployed: '+document.lastModified+'\\nScripts: '+(s.join(' , ')||'none')+'\\n\\n'+(errs.join('\\n\\n')||'No error was reported.')+'\\n\\nTake a screenshot of this screen and send it.';",
+  "b.appendChild(d);",
+  "},6000);",
+  "})();",
+].join("");
+
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -56,6 +74,7 @@ export const Route = createRootRoute({
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: BOOT_DIAGNOSTIC }} />
         <script
           dangerouslySetInnerHTML={{
             __html:
