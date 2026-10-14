@@ -22,7 +22,8 @@ export type TabId =
   | "resources"
   | "notes"
   | "progress"
-  | "check";
+  | "check"
+  | "booth";
 
 export type ThemeChoice = "system" | "light" | "dark";
 export type MinuteKind = "disc" | "listen" | "shadow";
@@ -71,6 +72,7 @@ export type AcademyData = {
   studio: number[];
   reads: string[];
   talks: Record<string, number>;
+  booth: BoothState;
 };
 
 type AcademyStore = AcademyData & {
@@ -106,6 +108,11 @@ type AcademyStore = AcademyData & {
   markStudio: (n: number) => void;
   finishRead: (id: string) => void;
   finishTalk: (id: string, score: number) => void;
+  markLine: (id: string) => void;
+  markMail: (id: string) => void;
+  scoreAsk: (id: string, score: number) => void;
+  markMinute: () => void;
+  markSlip: (id: string) => void;
   openDesk: (id: string | null) => void;
   exportData: () => AcademyData;
   importData: (raw: unknown) => boolean;
@@ -128,7 +135,20 @@ const TABS: TabId[] = [
   "notes",
   "progress",
   "check",
+  "booth",
 ];
+
+export type BoothState = {
+  lines: string[];
+  mails: string[];
+  asks: Record<string, number>;
+  minutes: number;
+  slips: string[];
+};
+
+export function emptyBooth(): BoothState {
+  return { lines: [], mails: [], asks: {}, minutes: 0, slips: [] };
+}
 
 export const emptyDay = (): DayLog => ({
   mode: "n",
@@ -159,6 +179,7 @@ export function defaults(): AcademyData {
     studio: [],
     reads: [],
     talks: {},
+    booth: emptyBooth(),
   };
 }
 
@@ -292,6 +313,31 @@ function migrateRecordings(raw: unknown): RecordingItem[] {
     .slice(-24);
 }
 
+function migrateBooth(raw: unknown): BoothState {
+  const base = emptyBooth();
+  if (!raw || typeof raw !== "object") return base;
+  const row = raw as Record<string, unknown>;
+  const take = (value: unknown, cap: number) =>
+    Array.isArray(value)
+      ? [...new Set(value.map((id) => String(id)).filter(Boolean))].slice(0, cap)
+      : [];
+  const asks: Record<string, number> = {};
+  if (row.asks && typeof row.asks === "object") {
+    for (const [key, value] of Object.entries(row.asks as Record<string, unknown>)) {
+      const score = Number(value);
+      if (!key || !Number.isFinite(score)) continue;
+      asks[key.slice(0, 40)] = Math.max(1, Math.min(5, Math.round(score)));
+    }
+  }
+  return {
+    lines: take(row.lines, 200),
+    mails: take(row.mails, 40),
+    slips: take(row.slips, 40),
+    asks,
+    minutes: Math.max(0, Math.min(500, Math.round(Number(row.minutes) || 0))),
+  };
+}
+
 function migrateTalks(raw: unknown): Record<string, number> {
   if (!raw || typeof raw !== "object") return {};
   const talks: Record<string, number> = {};
@@ -354,6 +400,7 @@ function sanitize(raw: unknown): AcademyData | null {
       : [],
     reads: Array.isArray(row.reads) ? [...new Set(row.reads.map((id) => String(id)).filter(Boolean))].slice(0, 40) : [],
     talks: migrateTalks(row.talks),
+    booth: migrateBooth(row.booth),
   };
 }
 
@@ -396,6 +443,7 @@ function pick(state: AcademyStore): AcademyData {
     studio: state.studio,
     reads: state.reads,
     talks: state.talks,
+    booth: state.booth,
   };
 }
 
@@ -744,6 +792,58 @@ export const useAcademy = create<AcademyStore>((set, get) => ({
     const next = { ...pick(state), talks, xp };
     persist(next);
     set({ talks, xp });
+  },
+  markLine: (id) => {
+    const state = get();
+    if (!id || state.booth.lines.includes(id)) return;
+    const booth = { ...state.booth, lines: [...state.booth.lines, id] };
+    const xp = state.xp + 2;
+    const next = { ...pick(state), booth, xp };
+    persist(next);
+    set({ booth, xp });
+  },
+  markMail: (id) => {
+    const state = get();
+    if (!id || state.booth.mails.includes(id)) return;
+    const booth = { ...state.booth, mails: [...state.booth.mails, id] };
+    const xp = state.xp + 12;
+    const next = { ...pick(state), booth, xp };
+    persist(next);
+    set({ booth, xp });
+  },
+  scoreAsk: (id, score) => {
+    const state = get();
+    const clean = Math.max(1, Math.min(5, Math.round(score)));
+    const prev = state.booth.asks[id] ?? 0;
+    if (clean <= prev) {
+      const booth = { ...state.booth, asks: { ...state.booth.asks, [id]: prev } };
+      set({ booth });
+      return;
+    }
+    let xp = state.xp;
+    if (prev === 0) xp += 8;
+    if (prev < 4 && clean >= 4) xp += 6;
+    const booth = { ...state.booth, asks: { ...state.booth.asks, [id]: clean } };
+    const next = { ...pick(state), booth, xp };
+    persist(next);
+    set({ booth, xp });
+  },
+  markMinute: () => {
+    const state = get();
+    const booth = { ...state.booth, minutes: Math.min(500, state.booth.minutes + 1) };
+    const xp = state.xp + 6;
+    const next = { ...pick(state), booth, xp };
+    persist(next);
+    set({ booth, xp });
+  },
+  markSlip: (id) => {
+    const state = get();
+    if (!id || state.booth.slips.includes(id)) return;
+    const booth = { ...state.booth, slips: [...state.booth.slips, id] };
+    const xp = state.xp + 3;
+    const next = { ...pick(state), booth, xp };
+    persist(next);
+    set({ booth, xp });
   },
   openDesk: (id) => {
     const next = { ...pick(get()), tab: "read" as const };

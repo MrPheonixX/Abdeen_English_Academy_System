@@ -15,6 +15,7 @@ import {
   Newspaper,
   NotebookPen,
   Route,
+  Briefcase,
   Sun,
   X,
   type LucideIcon,
@@ -24,6 +25,7 @@ import { dayKey } from "@/lib/academy/dates";
 import { LESSON_COUNT } from "@/lib/academy/lessons";
 import { streakCount, useAcademy, type TabId, type ThemeChoice } from "@/lib/academy/store";
 import { LabView } from "./lab";
+import { FloorView } from "./floor";
 import { CheckView, HomeView, LevelsView, NotesView, PlanView, ProgressView, ResourcesView, WordsView } from "./pages";
 import { ReadView } from "./read";
 import { StudioView } from "./studio";
@@ -37,6 +39,7 @@ const NAV: { id: TabId; label: string; icon: LucideIcon; primary?: boolean }[] =
   { id: "words", label: "Words", icon: Library, primary: true },
   { id: "progress", label: "Progress", icon: ChartNoAxesColumn, primary: true },
   { id: "talk", label: "Talk", icon: MessagesSquare },
+  { id: "booth", label: "Booth", icon: Briefcase },
   { id: "read", label: "Reading", icon: Newspaper },
   { id: "lab", label: "Sounds", icon: AudioLines },
   { id: "home", label: "Home", icon: House },
@@ -96,7 +99,7 @@ export function Academy() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold text-teal">Speaking practice that stays on this page</p>
-            <h1 className="text-3xl font-extrabold tracking-tight">English Academy</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">Abdeen English Academy</h1>
             <p className="mt-1 text-sm text-muted">For {name || "you"}. Progress stays in this browser.</p>
           </div>
           <button
@@ -165,6 +168,7 @@ export function Academy() {
           {tab === "lab" && <LabView />}
           {tab === "studio" && <StudioView />}
           {tab === "talk" && <TalkView />}
+          {tab === "booth" && <FloorView />}
           {tab === "read" && <ReadView today={today} />}
           {tab === "words" && <WordsView today={today} />}
           {tab === "resources" && <ResourcesView />}

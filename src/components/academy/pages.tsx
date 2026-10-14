@@ -45,6 +45,7 @@ export function HomeView({ today }: { today: string }) {
           <Btn tone="primary" onClick={() => setTab("today")}>
             Open today
           </Btn>
+          <Btn onClick={() => setTab("booth")}>Booth</Btn>
           <Btn onClick={() => setTab("lab")}>Sound Lab</Btn>
           <Btn onClick={() => setTab("words")}>Words</Btn>
         </div>
@@ -471,6 +472,7 @@ export function ProgressView({ today }: { today: string }) {
   const studio = useAcademy((s) => s.studio);
   const reads = useAcademy((s) => s.reads);
   const talks = useAcademy((s) => s.talks);
+  const booth = useAcademy((s) => s.booth);
   const fileRef = useRef<HTMLInputElement>(null);
   const [lessonDraft, setLessonDraft] = useState(String(Math.min(teNext, LESSON_COUNT + 1)));
   const keys = Array.from({ length: 30 }, (_, i) => shiftKey(today, -29 + i));
@@ -496,6 +498,8 @@ export function ProgressView({ today }: { today: string }) {
     bestTalk,
     recordings: recordings.length,
     lessons: teDone,
+    lines: booth.lines.length,
+    mails: booth.mails.length,
   });
   const earned = badges.filter((badge) => badge.on).length;
 

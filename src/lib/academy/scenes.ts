@@ -258,6 +258,86 @@ export const SCENES: Scene[] = [
       },
     ],
   },
+  {
+    id: "hold",
+    title: "Back from hold",
+    where: "Customer call",
+    setup: "You put them on hold for two minutes. The address was wrong. You can change it, but the new delivery is tomorrow.",
+    beats: [
+      {
+        npc: "Hello? I was waiting. Did you forget me?",
+        choices: [
+          { text: "I'm sorry for the wait. I have the address now. Thank you for holding.", quality: "best", reply: "Alright. So can you fix it?" },
+          { text: "The system is slow.", quality: "weak", reply: "I don't care about your system. I was just sitting here." },
+          { text: "Yes, I'm here.", quality: "ok", reply: "And? What did you find?" },
+        ],
+      },
+      {
+        npc: "The driver went to the old street. I told you this yesterday.",
+        choices: [
+          { text: "You're right. The old street is still on the order. I can change it now.", quality: "best", reply: "Good. The new one is 14 Garden Road." },
+          { text: "Yesterday was a different agent.", quality: "weak", reply: "So nobody talks to each other?" },
+          { text: "Addresses change a lot.", quality: "ok", reply: "Just change this one, please." },
+        ],
+      },
+      {
+        npc: "Can it still arrive today?",
+        choices: [
+          { text: "Not today. The new delivery is tomorrow between nine and one. I can text you the window.", quality: "best", reply: "Tomorrow is not great, but okay. Text me." },
+          { text: "Maybe. I don't know.", quality: "weak", reply: "Then why did I wait on hold?" },
+          { text: "The driver might come back.", quality: "ok", reply: "Might doesn't help me. What is the real time?" },
+        ],
+      },
+      {
+        npc: "Fine. Don't make me call again.",
+        choices: [
+          { text: "You shouldn't have to. The address is updated, and you'll get a text. Anything else before I let you go?", quality: "best", reply: "No. That's all." },
+          { text: "I can't control the driver.", quality: "weak", reply: "Then this was a waste of time." },
+          { text: "Okay, bye.", quality: "ok", reply: "Yeah. Bye." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "gate",
+    title: "At the gate",
+    where: "Travel",
+    setup: "Your bag is over the limit by one kilo. You can pay, or you can move a book into your backpack.",
+    beats: [
+      {
+        npc: "This bag is one kilo over. You'll need to pay, or take something out.",
+        choices: [
+          { text: "Thank you. I'll take the book out and put it in my backpack.", quality: "best", reply: "Go ahead. I'll weigh it again." },
+          { text: "That's not fair.", quality: "weak", reply: "The limit is the same for everyone. Pay or remove something." },
+          { text: "How much is the fee?", quality: "ok", reply: "Forty dollars. Or you can remove something." },
+        ],
+      },
+      {
+        npc: "Put it on the belt again, please.",
+        choices: [
+          { text: "Here it is. Is it under the limit now?", quality: "best", reply: "Yes. You're fine. Here's your tag." },
+          { text: "Hurry, my flight is soon.", quality: "ok", reply: "I know. One moment." },
+          { text: "I already did this.", quality: "weak", reply: "And it was over. Please put it on the belt." },
+        ],
+      },
+      {
+        npc: "Window or aisle?",
+        choices: [
+          { text: "Aisle, please. And what time do we board?", quality: "best", reply: "Boarding is at ten forty. Gate B12." },
+          { text: "I don't care.", quality: "weak", reply: "I'll pick one, then." },
+          { text: "Window.", quality: "ok", reply: "Window it is." },
+        ],
+      },
+      {
+        npc: "You're all set.",
+        choices: [
+          { text: "Thank you. Gate B12, boarding at ten forty. Have a good shift.", quality: "best", reply: "You too. Safe flight." },
+          { text: "Okay.", quality: "ok", reply: "Safe flight." },
+          { text: "Finally.", quality: "weak", reply: "Have a good flight." },
+        ],
+      },
+    ],
+  },
 ];
 
 export function sceneById(id: string) {

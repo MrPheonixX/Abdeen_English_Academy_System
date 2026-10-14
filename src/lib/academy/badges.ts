@@ -15,6 +15,8 @@ export function badgeList(input: {
   bestTalk: number;
   recordings: number;
   lessons: number;
+  lines?: number;
+  mails?: number;
 }): Badge[] {
   return [
     { id: "first-word", title: "First phrase", detail: "One phrase and a sentence of your own.", on: input.words >= 1 },
@@ -28,5 +30,7 @@ export function badgeList(input: {
     { id: "mic", title: "On tape", detail: "One recording saved in this browser.", on: input.recordings >= 1 },
     { id: "basics", title: "Basics moving", detail: "Thirty TalkEnglish lessons checked off.", on: input.lessons >= 30 },
     { id: "xp", title: "Speaker rank", detail: "700 XP. Still the same daily size.", on: input.xp >= 700 },
+    { id: "lines", title: "Lines in the mouth", detail: "Said ten booth lines out loud.", on: (input.lines ?? 0) >= 10 },
+    { id: "mail", title: "A real email", detail: "Wrote one short mail with a next step.", on: (input.mails ?? 0) >= 1 },
   ];
 }

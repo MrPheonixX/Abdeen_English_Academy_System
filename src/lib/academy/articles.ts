@@ -134,6 +134,26 @@ export const ARTICLES: Article[] = [
       { q: "How long did he stay?", options: ["About ten minutes", "A little over thirty minutes", "All night"], answer: 1 },
     ],
   },
+  {
+    id: "short-mail",
+    title: "Four lines, then send",
+    minutes: 3,
+    paragraphs: [
+      "Ahmed needed Saturday morning off. He started an email to Sara and wrote a paragraph about the bus, his sleep, and a family visit. He deleted all of it.",
+      "The second version was four lines. He asked for the shift, offered Sunday night, and gave her a time to answer. He read it aloud once. It sounded like something a person would actually send.",
+      "Sara replied in ten minutes. She could not take Saturday, but she knew someone who could. The short mail did the job. The long one would still have been sitting in drafts.",
+    ],
+    glossary: [
+      { w: "drafts", d: "emails you started and did not send" },
+      { w: "offered", d: "said you would do something in return" },
+      { w: "replied", d: "wrote back" },
+    ],
+    questions: [
+      { q: "What did he delete?", options: ["A long story about the bus and his sleep", "Sara's address", "The shift time"], answer: 0 },
+      { q: "What did the short mail include?", options: ["Only an apology", "A request, an offer, and a time to answer", "His whole week"], answer: 1 },
+      { q: "What happened after he sent it?", options: ["Nobody answered", "Sara replied and knew someone who could swap", "He lost the job"], answer: 1 },
+    ],
+  },
 ];
 
 export function articlesForDay(day: string): Article[] {
