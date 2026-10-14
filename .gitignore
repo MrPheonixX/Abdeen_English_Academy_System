@@ -1,4 +1,10 @@
 node_modules/
+.output/
+.vercel/
+dist/
+pages-out/
+coverage/
+playwright-report/
 .project_id
 .github_repo
 .env

@@ -1,5 +1,6 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -146,7 +147,15 @@ function authPopupPlugin(): Plugin {
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
+  // GitHub Pages project sites live below /<repository-name>/. Keep the same
+  // base in Vite's emitted asset URLs and in the client router.
   base: process.env.PAGES_BASE || "/",
+  define: {
+    // Unlike VITE_* variables, PAGES_BASE must not be exposed as an arbitrary
+    // environment object. This single build-time flag only selects static PWA
+    // URLs when deploying to GitHub Pages.
+    __PAGES_BASE__: JSON.stringify(process.env.PAGES_BASE || ""),
+  },
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -157,7 +166,10 @@ export default defineConfig(({ command, isPreview }) => ({
     port: 8081,
     strictPort: true,
   },
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    tsconfigPaths: true,
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
