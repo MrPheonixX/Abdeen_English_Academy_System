@@ -59,6 +59,18 @@ jobs:
             echo "No index.html was produced" >&2
             exit 1
           fi
+          # The prerendered shell can contain root-relative URLs such as
+          # /assets/app.js. Put the Pages base in front of them, once.
+          if [ "${PAGES_BASE}" != "/" ]; then
+            python3 - <<'PY'
+          import os, pathlib, re
+          base = os.environ["PAGES_BASE"]
+          p = pathlib.Path("pages-out/index.html")
+          s = p.read_text(encoding="utf-8")
+          pat = re.compile(r"""(["'(])/(assets/|__grok/|favicon\.svg|manifest\.webmanifest|og\.jpg|sw\.js)""")
+          p.write_text(pat.sub(lambda m: m.group(1) + base + m.group(2), s), encoding="utf-8")
+          PY
+          fi
           if [ ! -f pages-out/manifest.webmanifest ] || [ ! -f pages-out/sw.js ]; then
             echo "Static PWA manifest or service worker is missing from the build" >&2
             exit 1
@@ -70,6 +82,7 @@ jobs:
           touch pages-out/.nojekyll
           if [ "${PAGES_BASE}" != "/" ] && grep -Eq '(src|href)="/(assets|favicon\.svg|manifest\.webmanifest|__grok)/' pages-out/index.html; then
             echo "Found root-relative asset URLs that break on GitHub Pages project sites" >&2
+            grep -Eo '(src|href)="/(assets|__grok)/[^"]*"' pages-out/index.html | head -5 >&2
             exit 1
           fi
           cp pages-out/index.html pages-out/404.html
