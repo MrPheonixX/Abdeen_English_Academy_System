@@ -1,5 +1,6 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -165,7 +166,10 @@ export default defineConfig(({ command, isPreview }) => ({
     port: 8081,
     strictPort: true,
   },
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    tsconfigPaths: true,
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
@@ -176,11 +180,6 @@ export default defineConfig(({ command, isPreview }) => ({
     grokPwaPlugin(),
     tailwindcss(),
     tanstackStart({
-      // Keep Start's client build from falling back to Vite's plain index.html entry.
-      // The path is relative to srcDirectory (defaults to "src").
-      client: {
-        entry: "client.tsx",
-      },
       spa: {
         enabled: true,
       },
