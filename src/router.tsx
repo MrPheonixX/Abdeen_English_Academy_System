@@ -1,20 +1,10 @@
-import { createRouter } from "@tanstack/react-router";
-import { AppErrorComponent } from "@/lib/error-component";
-import { previewPathRewrite } from "@/lib/preview-path-prefix";
-import { routeTree } from "./routeTree.gen";
+// Change this:
+// import { BrowserRouter } from 'react-router-dom';
 
-function routerBase() {
-  const raw = import.meta.env.BASE_URL ?? "/";
-  if (raw === "/" || raw === "./" || raw === "") return undefined;
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
+// To this:
+import { HashRouter } from 'react-router-dom';
 
-export function getRouter() {
-  const basepath = routerBase();
-  return createRouter({
-    routeTree,
-    ...(basepath ? { basepath } : {}),
-    rewrite: previewPathRewrite(),
-    defaultErrorComponent: AppErrorComponent,
-  });
-}
+// And wrap your app like this:
+<HashRouter>
+  <App />
+</HashRouter>
