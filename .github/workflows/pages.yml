@@ -53,16 +53,8 @@ jobs:
             echo "No index.html was produced" >&2
             exit 1
           fi
-          # Nitro/Vercel can omit Vite's publicDir files from output/static.
-          # Copy the project's static assets explicitly so the PWA manifest,
-          # service worker, icons, and favicon are always in the Pages artifact.
-          if [ ! -d public ]; then
-            echo "The public/ directory is missing" >&2
-            exit 1
-          fi
-          cp -a public/. pages-out/
           if [ ! -f pages-out/manifest.webmanifest ] || [ ! -f pages-out/sw.js ]; then
-            echo "Static PWA manifest or service worker is missing from public/" >&2
+            echo "Static PWA manifest or service worker is missing from the build" >&2
             exit 1
           fi
           touch pages-out/.nojekyll
