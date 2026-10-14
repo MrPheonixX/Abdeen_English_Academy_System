@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   AudioLines,
@@ -102,6 +103,13 @@ export function Academy() {
             <h1 className="text-3xl font-extrabold tracking-tight">Abdeen English Academy</h1>
             <p className="mt-1 text-sm text-muted">For {name || "you"}. Progress stays in this browser.</p>
           </div>
+          <div className="flex items-center gap-2">
+          <Link
+            to="/dashboard"
+            className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
+          >
+            Dashboard
+          </Link>
           <button
             type="button"
             aria-label={dark ? "Switch to light" : "Switch to dark"}
@@ -110,6 +118,7 @@ export function Academy() {
           >
             {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
           </button>
+          </div>
         </div>
         <div className="mt-4 rounded-card bg-teal px-4 py-4 text-teal-ink">
           <div className="flex items-end justify-between gap-3">

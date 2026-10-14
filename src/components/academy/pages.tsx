@@ -379,6 +379,63 @@ function WordList({
   );
 }
 
+const BACKUP_KEY = "eng-academy-v3";
+
+function BackupCard() {
+  const [msg, setMsg] = useState("");
+  function exportData() {
+    const text = localStorage.getItem(BACKUP_KEY);
+    if (!text) {
+      setMsg("Nothing to back up yet.");
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `english-academy-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setMsg("Backup downloaded.");
+  }
+  async function importData(file: File | undefined) {
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("bad file");
+      if (!window.confirm("Replace the progress in this browser with this backup?")) return;
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(data));
+      window.location.reload();
+    } catch {
+      setMsg("That file is not a valid backup.");
+    }
+  }
+  return (
+    <div className="mt-3">
+      <Card>
+        <h2 className="text-base font-bold">Back up your progress</h2>
+        <p className="mt-2 text-sm text-muted">
+          Your progress lives only in this browser. Download a backup now and then. Restore it on a new phone or browser.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Btn tone="gold" onClick={exportData}>
+            Download backup
+          </Btn>
+          <label className="inline-flex min-h-11 cursor-pointer items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold">
+            Restore backup
+            <input
+              type="file"
+              accept="application/json,.json"
+              className="sr-only"
+              onChange={(event) => void importData(event.target.files?.[0])}
+            />
+          </label>
+        </div>
+        {msg && <p className="mt-2 text-sm font-semibold">{msg}</p>}
+      </Card>
+    </div>
+  );
+}
+
 export function NotesView() {
   const notes = useAcademy((s) => s.notes);
   const nid = useAcademy((s) => s.nid);
@@ -452,6 +509,7 @@ export function NotesView() {
           </p>
         </Card>
       )}
+      <BackupCard />
     </div>
   );
 }
