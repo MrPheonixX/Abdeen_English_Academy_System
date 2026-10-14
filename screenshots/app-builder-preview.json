@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "English Academy",
+      "hasCanvas": false,
+      "bodyTextLen": 3181,
+      "bodyTextHash": "a2df18ed1d881cea11248eab0b9b6119d63f226b9f48f8766fdf2426bd631a26",
+      "bodyTextPrefix": "Speaking practice that stays on this page English Academy For Ah",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "English Academy",
+      "hasCanvas": false,
+      "bodyTextLen": 3118,
+      "bodyTextHash": "90c16c9777769456531b820dbe8113e8bb1f613fb43a3c68f6eb8ab1b4fa75b2",
+      "bodyTextPrefix": "Speaking practice that stays on this page English Academy For Ah",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

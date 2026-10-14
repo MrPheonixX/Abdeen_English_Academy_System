@@ -1,0 +1,65 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pages base path
+        id: base
+        run: |
+          if [ "${{ github.event.repository.name }}" = "${{ github.repository_owner }}.github.io" ]; then
+            echo "path=/" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
+          fi
+      - run: npm run build
+        env:
+          PAGES_BASE: ${{ steps.base.outputs.path }}
+      - name: Collect the static site
+        run: |
+          mkdir -p pages-out
+          cp -a .vercel/output/static/. pages-out/
+          if [ -f pages-out/_shell.html ]; then
+            cp pages-out/_shell.html pages-out/index.html
+          fi
+          if [ ! -f pages-out/index.html ]; then
+            echo "No index.html was produced" >&2
+            exit 1
+          fi
+          cp pages-out/index.html pages-out/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
