@@ -138,3 +138,19 @@ button:not(:disabled):active { transform: scale(0.97); }
   button, a, input, textarea { transition: none; }
   button:not(:disabled):hover, button:not(:disabled):active { transform: none; }
 }
+
+/* Transitions between pages and inside them */
+.view-in > * > * { animation: view-in 0.4s ease-out both; }
+.view-in > * > *:nth-child(2) { animation-delay: 0.05s; }
+.view-in > * > *:nth-child(3) { animation-delay: 0.1s; }
+.view-in > * > *:nth-child(4) { animation-delay: 0.15s; }
+.view-in > * > *:nth-child(5) { animation-delay: 0.2s; }
+.view-in > * > *:nth-child(6) { animation-delay: 0.25s; }
+.view-in > * > *:nth-child(n + 7) { animation-delay: 0.3s; }
+@keyframes pop { 0% { transform: scale(0.85); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+input[type="checkbox"]:checked { animation: pop 0.28s ease-out; }
+[style*="width"] { transition: width 0.7s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .view-in > * > *, input[type="checkbox"]:checked { animation: none; }
+  [style*="width"] { transition: none; }
+}
