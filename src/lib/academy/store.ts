@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { currentAccount, GUEST_KEY, profileKey } from "./accounts";
 import { deleteClip } from "./audio";
 import {
   DEFAULT_REWARDS,
@@ -118,7 +119,6 @@ type AcademyStore = AcademyData & {
   importData: (raw: unknown) => boolean;
 };
 
-const KEY = "eng-academy-v3";
 const THEME_KEY = "eng-academy-theme";
 
 const TABS: TabId[] = [
@@ -406,7 +406,8 @@ function sanitize(raw: unknown): AcademyData | null {
 
 function readStorage(): AcademyData {
   if (typeof localStorage === "undefined") return defaults();
-  const keys = [KEY, "eng-academy-v2", "eng-academy"];
+  const base = profileKey();
+  const keys = [base, `${base}:backup`, ...(base === GUEST_KEY ? ["eng-academy-v2", "eng-academy"] : [])];
   for (const key of keys) {
     const text = localStorage.getItem(key);
     if (!text) continue;
@@ -447,12 +448,27 @@ function pick(state: AcademyStore): AcademyData {
   };
 }
 
+let backupDay = "";
+
 function persist(data: AcademyData) {
+  let ok = true;
   try {
-    localStorage.setItem(KEY, JSON.stringify(data));
+    const key = profileKey();
+    const text = JSON.stringify(data);
+    const previous = localStorage.getItem(key);
+    const today = new Date().toISOString().slice(0, 10);
+    // Keep the last known good copy once per day in case the main one is damaged.
+    if (previous && previous !== text && backupDay !== today) {
+      localStorage.setItem(`${key}:backup`, previous);
+      backupDay = today;
+    }
+    localStorage.setItem(key, text);
     localStorage.setItem(THEME_KEY, data.theme);
   } catch {
-    /* private mode / full storage */
+    ok = false;
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("academy-save", { detail: { ok } }));
   }
 }
 
@@ -531,6 +547,8 @@ export const useAcademy = create<AcademyStore>((set, get) => ({
   deskId: null,
   hydrate: () => {
     const data = readStorage();
+    const account = currentAccount();
+    if (account && !data.name) data.name = account.name;
     set({ ...data, hydrated: true, notice: "" });
   },
   setTab: (tab) => {
