@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   AudioLines,
@@ -25,10 +24,9 @@ import { rankFor } from "@/lib/academy/content";
 import { dayKey } from "@/lib/academy/dates";
 import { LESSON_COUNT } from "@/lib/academy/lessons";
 import { streakCount, useAcademy, type TabId, type ThemeChoice } from "@/lib/academy/store";
-import { currentAccount } from "@/lib/academy/accounts";
-import { signOutAll } from "@/lib/academy/cloud";
-import { playSfx, setSound, soundOn } from "@/lib/academy/sfx";
+import { playSfx } from "@/lib/academy/sfx";
 import { SavedBadge } from "./auth-gate";
+import { AppMenu } from "./menu";
 import { LabView } from "./lab";
 import { FloorView } from "./floor";
 import { CheckView, HomeView, LevelsView, NotesView, PlanView, ProgressView, ResourcesView, WordsView } from "./pages";
@@ -56,9 +54,7 @@ const NAV: { id: TabId; label: string; icon: LucideIcon; primary?: boolean }[] =
 ];
 
 export function Academy() {
-  const [sound, setSoundState] = useState(true);
   useEffect(() => {
-    setSoundState(soundOn());
     // Soft click on buttons, a rising chime when a task is ticked.
     const onClick = (event: MouseEvent) => {
       const el = event.target as HTMLElement | null;
@@ -121,33 +117,7 @@ export function Academy() {
             <p className="mt-1 text-sm text-muted">For {name || "you"}. Progress saves on this device.<SavedBadge /></p>
           </div>
           <div className="flex items-center gap-2">
-          <Link
-            to="/dashboard"
-            className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
-          >
-            Dashboard
-          </Link>
-          <button
-            type="button"
-            aria-pressed={sound}
-            className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
-            onClick={() => {
-              setSound(!sound);
-              setSoundState(!sound);
-            }}
-          >
-            {sound ? "Sound on" : "Sound off"}
-          </button>
-          <button
-            type="button"
-            className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
-            onClick={() => {
-              signOutAll();
-              window.location.reload();
-            }}
-          >
-            {currentAccount() ? "Sign out" : "Log in"}
-          </button>
+          <AppMenu />
           <button
             type="button"
             aria-label={dark ? "Switch to light" : "Switch to dark"}

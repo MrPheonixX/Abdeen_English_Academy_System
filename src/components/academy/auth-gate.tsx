@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { continueAsGuest, hasAccounts, sessionState, signIn, signUp } from "@/lib/academy/accounts";
+import { flushPendingClips, queueClips } from "@/lib/academy/audio";
 import { cloudEnabled, cloudLoggedIn, cloudSignIn, cloudSignUp, cloudSync } from "@/lib/academy/cloud";
 import { useAcademy } from "@/lib/academy/store";
 
@@ -23,6 +24,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
     if (cloudLoggedIn()) {
       void cloudSync().then((result) => {
         if (result === "pulled") useAcademy.getState().hydrate();
+        queueClips(useAcademy.getState().recordings.map((item) => item.id));
+        void flushPendingClips();
       });
     }
   }, []);
@@ -30,6 +33,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
   async function enter() {
     if (cloudLoggedIn()) await cloudSync();
     useAcademy.getState().hydrate();
+    if (cloudLoggedIn()) {
+      queueClips(useAcademy.getState().recordings.map((item) => item.id));
+      void flushPendingClips();
+    }
     setSignedIn(true);
   }
 

@@ -3,6 +3,7 @@ import { Mic, Square } from "lucide-react";
 import { deleteClip, loadClip, saveClip } from "@/lib/academy/audio";
 import { dayKey } from "@/lib/academy/dates";
 import { useAcademy, type RecordingItem, type RecordingKind } from "@/lib/academy/store";
+import { cloudLoggedIn } from "@/lib/academy/cloud";
 import { playSfx } from "@/lib/academy/sfx";
 import { Btn } from "./ui";
 
@@ -57,6 +58,10 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
   const timer = useRef(0);
   const alive = useRef(true);
   const [preview, setPreview] = useState<string | null>(null);
+  const [volatile, setVolatile] = useState(false);
+  useEffect(() => {
+    void navigator.storage?.persisted?.().then((kept) => setVolatile(!kept && !cloudLoggedIn()));
+  }, []);
   const previewRef = useRef<string | null>(null);
 
   function showPreview(blob: Blob | null) {
@@ -189,6 +194,12 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
           <p className="text-sm font-semibold">Listen to what you just recorded</p>
           <ClipAudio src={preview} />
         </div>
+      )}
+      {volatile && (
+        <p className="mt-2 text-xs text-muted">
+          Recordings stay on this device. If your browser clears site data when it closes, they can disappear. Log in with
+          online save to keep a copy online, or press Save on a recording.
+        </p>
       )}
       {error && <p className="mt-2 text-sm font-semibold text-warn">{error}</p>}
     </div>
