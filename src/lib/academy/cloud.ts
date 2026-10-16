@@ -160,3 +160,52 @@ export function signOutAll() {
   }
   signOut();
 }
+
+// ---- Recordings in Supabase Storage (private bucket, one folder per user) ----
+const BUCKET = "recordings";
+
+async function clipRequest(method: string, id: string, extra: RequestInit = {}, authenticated = false) {
+  const session = await token();
+  const route = authenticated ? "object/authenticated" : "object";
+  return fetch(`${SUPABASE_URL}/storage/v1/${route}/${BUCKET}/${session.user.id}/${id}`, {
+    method,
+    ...extra,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+      ...(extra.headers ?? {}),
+    },
+  });
+}
+
+export async function uploadClip(id: string, blob: Blob): Promise<boolean> {
+  if (!cloudLoggedIn()) return false;
+  try {
+    const res = await clipRequest("POST", id, {
+      headers: { "Content-Type": blob.type || "audio/webm", "x-upsert": "true" },
+      body: blob,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function downloadClip(id: string): Promise<Blob | null> {
+  if (!cloudLoggedIn()) return null;
+  try {
+    const res = await clipRequest("GET", id, {}, true);
+    return res.ok ? await res.blob() : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function removeCloudClip(id: string) {
+  if (!cloudLoggedIn()) return;
+  try {
+    await clipRequest("DELETE", id);
+  } catch {
+    /* ignore */
+  }
+}
