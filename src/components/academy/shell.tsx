@@ -25,7 +25,9 @@ import { rankFor } from "@/lib/academy/content";
 import { dayKey } from "@/lib/academy/dates";
 import { LESSON_COUNT } from "@/lib/academy/lessons";
 import { streakCount, useAcademy, type TabId, type ThemeChoice } from "@/lib/academy/store";
-import { currentAccount, signOut } from "@/lib/academy/accounts";
+import { currentAccount } from "@/lib/academy/accounts";
+import { signOutAll } from "@/lib/academy/cloud";
+import { playSfx, setSound, soundOn } from "@/lib/academy/sfx";
 import { SavedBadge } from "./auth-gate";
 import { LabView } from "./lab";
 import { FloorView } from "./floor";
@@ -54,6 +56,19 @@ const NAV: { id: TabId; label: string; icon: LucideIcon; primary?: boolean }[] =
 ];
 
 export function Academy() {
+  const [sound, setSoundState] = useState(true);
+  useEffect(() => {
+    setSoundState(soundOn());
+    // Soft click on buttons, a rising chime when a task is ticked.
+    const onClick = (event: MouseEvent) => {
+      const el = event.target as HTMLElement | null;
+      const box = el?.closest("input[type=checkbox]") as HTMLInputElement | null;
+      if (box) playSfx(box.checked ? "done" : "undo");
+      else if (el?.closest("button, a")) playSfx("tap");
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
   const tab = useAcademy((s) => s.tab);
   const setTab = useAcademy((s) => s.setTab);
   const xp = useAcademy((s) => s.xp);
@@ -114,9 +129,20 @@ export function Academy() {
           </Link>
           <button
             type="button"
+            aria-pressed={sound}
             className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
             onClick={() => {
-              signOut();
+              setSound(!sound);
+              setSoundState(!sound);
+            }}
+          >
+            {sound ? "Sound on" : "Sound off"}
+          </button>
+          <button
+            type="button"
+            className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
+            onClick={() => {
+              signOutAll();
               window.location.reload();
             }}
           >

@@ -3,6 +3,7 @@ import { Mic, Square } from "lucide-react";
 import { deleteClip, loadClip, saveClip } from "@/lib/academy/audio";
 import { dayKey } from "@/lib/academy/dates";
 import { useAcademy, type RecordingItem, type RecordingKind } from "@/lib/academy/store";
+import { playSfx } from "@/lib/academy/sfx";
 import { Btn } from "./ui";
 
 const MAX_MS = 8 * 60 * 1000;
@@ -27,6 +28,24 @@ function micMessage(err: unknown) {
   return "Mic is blocked. Allow the microphone for this site, then press Record again.";
 }
 
+function ClipAudio({ src, autoPlay }: { src: string; autoPlay?: boolean }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  // Chrome writes recordings without a length. This makes the seek bar work.
+  function fixLength() {
+    const audio = ref.current;
+    if (!audio || Number.isFinite(audio.duration)) return;
+    const back = () => {
+      audio.removeEventListener("timeupdate", back);
+      audio.currentTime = 0;
+    };
+    audio.addEventListener("timeupdate", back);
+    audio.currentTime = 1e101;
+  }
+  return (
+    <audio ref={ref} className="mt-2 w-full" controls preload="auto" autoPlay={autoPlay} src={src} onLoadedMetadata={fixLength} />
+  );
+}
+
 export function Recorder({ kind, title }: { kind: RecordingKind; title: string }) {
   const addRecording = useAcademy((s) => s.addRecording);
   const [phase, setPhase] = useState<"idle" | "rec" | "save">("idle");
@@ -37,11 +56,20 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
   const started = useRef(0);
   const timer = useRef(0);
   const alive = useRef(true);
+  const [preview, setPreview] = useState<string | null>(null);
+  const previewRef = useRef<string | null>(null);
+
+  function showPreview(blob: Blob | null) {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = blob ? URL.createObjectURL(blob) : null;
+    setPreview(previewRef.current);
+  }
 
   useEffect(() => {
     alive.current = true;
     return () => {
       alive.current = false;
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
       window.clearInterval(timer.current);
       const rec = recRef.current;
       if (!rec) return;
@@ -53,6 +81,7 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
 
   async function start() {
     setError("");
+    showPreview(null);
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       setError("This browser cannot record. Use the phone’s voice recorder, then listen there.");
       return;
@@ -84,6 +113,7 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
       started.current = Date.now();
       setMs(0);
       setPhase("rec");
+      playSfx("start");
       rec.start(1000);
       timer.current = window.setInterval(() => {
         const elapsed = Date.now() - started.current;
@@ -117,6 +147,8 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
         return;
       }
       addRecording({ id, d: dayKey(), kind, title, seconds });
+      showPreview(blob);
+      playSfx("win");
       setPhase("idle");
       setMs(0);
     } catch {
@@ -129,7 +161,10 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
 
   function stop() {
     const rec = recRef.current;
-    if (rec && rec.state !== "inactive") rec.stop();
+    if (rec && rec.state !== "inactive") {
+      playSfx("stop");
+      rec.stop();
+    }
   }
 
   return (
@@ -149,6 +184,12 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
         )}
         <span className="text-sm text-muted">{title}</span>
       </div>
+      {preview && (
+        <div className="view-in mt-3 rounded-xl border border-line bg-card p-3">
+          <p className="text-sm font-semibold">Listen to what you just recorded</p>
+          <ClipAudio src={preview} />
+        </div>
+      )}
       {error && <p className="mt-2 text-sm font-semibold text-warn">{error}</p>}
     </div>
   );
@@ -242,7 +283,7 @@ function ClipRow({ item, onRemove }: { item: RecordingItem; onRemove: () => void
           <Btn onClick={onRemove}>Remove</Btn>
         </div>
       </div>
-      {url && <audio className="mt-2 w-full" controls autoPlay src={url} />}
+      {url && <ClipAudio src={url} autoPlay />}
       {error && <p className="mt-2 text-sm font-semibold text-warn">{error}</p>}
     </li>
   );
