@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { AuthGate } from "@/components/academy/auth-gate";
 import { Academy } from "@/components/academy/shell";
 import { useAcademy } from "@/lib/academy/store";
 
@@ -12,5 +13,9 @@ function Home() {
   useEffect(() => {
     hydrate();
   }, [hydrate]);
-  return <Academy />;
+  return (
+    <AuthGate>
+      <Academy />
+    </AuthGate>
+  );
 }
