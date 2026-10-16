@@ -25,6 +25,8 @@ import { rankFor } from "@/lib/academy/content";
 import { dayKey } from "@/lib/academy/dates";
 import { LESSON_COUNT } from "@/lib/academy/lessons";
 import { streakCount, useAcademy, type TabId, type ThemeChoice } from "@/lib/academy/store";
+import { currentAccount, signOut } from "@/lib/academy/accounts";
+import { SavedBadge } from "./auth-gate";
 import { LabView } from "./lab";
 import { FloorView } from "./floor";
 import { CheckView, HomeView, LevelsView, NotesView, PlanView, ProgressView, ResourcesView, WordsView } from "./pages";
@@ -101,7 +103,7 @@ export function Academy() {
           <div>
             <p className="text-xs font-semibold text-teal">Speaking practice that stays on this page</p>
             <h1 className="text-3xl font-extrabold tracking-tight">Abdeen English Academy</h1>
-            <p className="mt-1 text-sm text-muted">For {name || "you"}. Progress stays in this browser.</p>
+            <p className="mt-1 text-sm text-muted">For {name || "you"}. Progress saves on this device.<SavedBadge /></p>
           </div>
           <div className="flex items-center gap-2">
           <Link
@@ -110,6 +112,16 @@ export function Academy() {
           >
             Dashboard
           </Link>
+          <button
+            type="button"
+            className="inline-flex min-h-11 items-center rounded-xl border border-line bg-card px-3 text-sm font-semibold"
+            onClick={() => {
+              signOut();
+              window.location.reload();
+            }}
+          >
+            {currentAccount() ? "Sign out" : "Log in"}
+          </button>
           <button
             type="button"
             aria-label={dark ? "Switch to light" : "Switch to dark"}
@@ -170,6 +182,7 @@ export function Academy() {
           </div>
         </nav>
         <main className="min-w-0">
+          <div key={tab} className="view-in">
           {tab === "home" && <HomeView today={today} />}
           {tab === "today" && <TodayView today={today} />}
           {tab === "plan" && <PlanView />}
@@ -184,6 +197,7 @@ export function Academy() {
           {tab === "notes" && <NotesView />}
           {tab === "progress" && <ProgressView today={today} />}
           {tab === "check" && <CheckView />}
+          </div>
         </main>
       </div>
 

@@ -9,7 +9,7 @@ const MAX_MS = 8 * 60 * 1000;
 
 function pickMime() {
   if (typeof MediaRecorder === "undefined") return "";
-  const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
+  const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus", "audio/aac"];
   return types.find((type) => MediaRecorder.isTypeSupported(type)) ?? "";
 }
 
@@ -17,6 +17,14 @@ function clock(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function micMessage(err: unknown) {
+  const name = err instanceof DOMException ? err.name : "";
+  if (name === "NotFoundError") return "No microphone was found on this device.";
+  if (name === "NotReadableError") return "Another app is using the microphone. Close it and try again.";
+  if (name === "SecurityError") return "Recording needs a secure page (https).";
+  return "Mic is blocked. Allow the microphone for this site, then press Record again.";
 }
 
 export function Recorder({ kind, title }: { kind: RecordingKind; title: string }) {
@@ -49,7 +57,12 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
       setError("This browser cannot record. Use the phone’s voice recorder, then listen there.");
       return;
     }
+    if (!window.isSecureContext) {
+      setError("Recording needs a secure page (https).");
+      return;
+    }
     try {
+      void navigator.storage?.persist?.();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mime = pickMime();
       const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
@@ -61,18 +74,24 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
         stream.getTracks().forEach((track) => track.stop());
         void finish(rec.mimeType || mime || "audio/webm");
       };
+      rec.onerror = () => {
+        window.clearInterval(timer.current);
+        stream.getTracks().forEach((track) => track.stop());
+        setPhase("idle");
+        setError("Recording stopped because of an error. Try again.");
+      };
       recRef.current = rec;
       started.current = Date.now();
       setMs(0);
       setPhase("rec");
-      rec.start();
+      rec.start(1000);
       timer.current = window.setInterval(() => {
         const elapsed = Date.now() - started.current;
         setMs(elapsed);
         if (elapsed >= MAX_MS && rec.state !== "inactive") rec.stop();
       }, 250);
-    } catch {
-      setError("Mic is blocked. Allow the microphone, or record in the phone voice app.");
+    } catch (err) {
+      setError(micMessage(err));
     }
   }
 
@@ -118,6 +137,7 @@ export function Recorder({ kind, title }: { kind: RecordingKind; title: string }
       <div className="flex flex-wrap items-center gap-2">
         {phase === "rec" ? (
           <Btn tone="gold" onClick={stop}>
+            <span className="rec-dot" aria-hidden />
             <Square className="size-4" aria-hidden />
             Stop · {clock(Math.floor(ms / 1000))}
           </Btn>
@@ -188,6 +208,25 @@ function ClipRow({ item, onRemove }: { item: RecordingItem; onRemove: () => void
     }
   }
 
+  async function download() {
+    try {
+      const blob = await loadClip(item.id);
+      if (!blob) {
+        setError("That file is no longer on this device.");
+        return;
+      }
+      const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = `${item.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase() || "recording"}-${item.d}.${ext}`;
+      a.click();
+      window.setTimeout(() => URL.revokeObjectURL(href), 4000);
+    } catch {
+      setError("Could not download that recording.");
+    }
+  }
+
   return (
     <li className="border-b border-line py-3 last:border-b-0">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -199,6 +238,7 @@ function ClipRow({ item, onRemove }: { item: RecordingItem; onRemove: () => void
         </div>
         <div className="flex gap-2">
           <Btn onClick={toggle}>{url ? "Hide" : "Play"}</Btn>
+          <Btn onClick={download}>Save</Btn>
           <Btn onClick={onRemove}>Remove</Btn>
         </div>
       </div>
