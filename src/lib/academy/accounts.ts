@@ -115,3 +115,17 @@ export function continueAsGuest() {
 export function signOut() {
   if (hasStorage()) localStorage.removeItem(SESSION_KEY);
 }
+
+/** Make an online user the active local profile (progress key follows the user id). */
+export function adoptCloudUser(id: string, name: string) {
+  if (!hasStorage()) return;
+  const list = readAccounts();
+  if (!list.some((a) => a.id === id)) {
+    if (list.length === 0) {
+      const old = localStorage.getItem(GUEST_KEY);
+      if (old) localStorage.setItem(`${GUEST_KEY}:${id}`, old);
+    }
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify([...list, { id, name, salt: "", hash: "" }]));
+  }
+  localStorage.setItem(SESSION_KEY, id);
+}

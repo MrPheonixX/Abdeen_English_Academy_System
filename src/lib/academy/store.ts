@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { currentAccount, GUEST_KEY, profileKey } from "./accounts";
+import { markChanged, queueCloudPush } from "./cloud";
 import { deleteClip } from "./audio";
 import {
   DEFAULT_REWARDS,
@@ -464,6 +465,8 @@ function persist(data: AcademyData) {
     }
     localStorage.setItem(key, text);
     localStorage.setItem(THEME_KEY, data.theme);
+    markChanged(key);
+    queueCloudPush(text);
   } catch {
     ok = false;
   }
